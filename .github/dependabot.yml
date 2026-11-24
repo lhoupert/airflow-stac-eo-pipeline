@@ -4,10 +4,11 @@ version: 2
 updates:
 
   # eo-ingest is pinned to an argo-stac-eo-pipeline commit, which version
-  # updates can't move. This entry sets the grouping and cooldown for uv.lock;
-  # security PRs come from the repo setting "Dependabot security updates".
-  # compose.yaml is left out: its STAC images share digests with the argo
-  # repo's deploy/, and a digest without a tag would follow "latest".
+  # updates can't move; re-pin it by hand. Security PRs come from the repo
+  # setting "Dependabot security updates". compose.yaml is not tracked yet:
+  # its pgstac, stac-fastapi-pgstac and stac-browser images are digests without
+  # a tag, which would follow "latest". Add a docker-compose entry with an
+  # ignore for those three once tagged images (e.g. Airflow's own) land there.
   - package-ecosystem: "uv"
     directory: "/"
     # Version updates only: security updates ignore the cooldown.
@@ -15,6 +16,9 @@ updates:
       default-days: 7
     schedule:
       interval: "weekly"
+    allow:
+    # Include transitive dependencies (e.g. boto3, pillow): the only direct one is the eo-ingest URL pin.
+    - dependency-type: "all"
     groups:
       python:
         patterns:
