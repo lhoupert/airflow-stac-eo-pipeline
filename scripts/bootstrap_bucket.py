@@ -1,4 +1,4 @@
-"""Create the asset bucket and make its objects publicly readable (idempotent).
+"""Create the asset bucket, make its objects publicly readable and open CORS (idempotent).
 
 stac-browser shows thumbnails straight from the object store, so anonymous GET must work.
 Reads the same S3_* and AWS_* variables as eo_ingest; `make up` pins them to the local store.
@@ -34,4 +34,11 @@ s3.put_bucket_policy(
         }
     ),
 )
-print(f"bucket {bucket}: ready, objects publicly readable")
+# RustFS sends no CORS headers by default; stac-browser fetches thumbnails cross-origin.
+s3.put_bucket_cors(
+    Bucket=bucket,
+    CORSConfiguration={
+        "CORSRules": [{"AllowedOrigins": ["*"], "AllowedMethods": ["GET", "HEAD"]}],
+    },
+)
+print(f"bucket {bucket}: ready, objects publicly readable, CORS open")
