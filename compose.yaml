@@ -1,0 +1,70 @@
+# Data services, translated from argo-stac-eo-pipeline's deploy/core/{minio,stac} manifests
+# (same pgSTAC, STAC API and stac-browser digests and settings). Airflow's own services are added
+# in a later session. Host ports match the Argo repo: S3 9100, STAC API 8081, stac-browser 8082.
+# Local demo credentials only; every port is bound to 127.0.0.1.
+name: eo-airflow
+
+services:
+  # S3-compatible object store. The Argo repo used MinIO, whose community images are no longer
+  # published on Docker Hub (Nov 2026); RustFS is an Apache-2.0 drop-in on the same ports.
+  # The bucket and its public-read policy are created from the host by scripts/bootstrap_bucket.py.
+  s3:
+    image: rustfs/rustfs:1.0.6@sha256:ee717072290bec9b11abfc0365f8310b00df1cd9b3639943edae47bdef05044a
+    environment:
+      RUSTFS_ACCESS_KEY: minioadmin
+      RUSTFS_SECRET_KEY: minioadmin
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports:
+      - "127.0.0.1:9100:9000"
+      - "127.0.0.1:9101:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/health"]
+      interval: 5s
+      retries: 20
+    mem_limit: 512m
+
+  pgstac:
+    image: ghcr.io/stac-utils/pgstac@sha256:26d5c20c650736a65793ab61cb2e7113ecef0c036ec8c2d6c6838c7aa14e131d
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pgstac
+      PGDATA: /var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "psql -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\" -tAc 'select pgstac.get_version()'"]
+      interval: 5s
+      retries: 60
+    mem_limit: 1g
+
+  stac-api:
+    image: ghcr.io/stac-utils/stac-fastapi-pgstac@sha256:db117b91302f7983ce4e07658768a6e8d2f6716613252a15f5dcdbda8dae9883
+    depends_on:
+      pgstac:
+        condition: service_healthy
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASS: postgres
+      POSTGRES_DBNAME: pgstac
+      POSTGRES_HOST_READER: pgstac
+      POSTGRES_HOST_WRITER: pgstac
+      POSTGRES_PORT: "5432"
+      ENABLE_TRANSACTIONS_EXTENSIONS: "TRUE"
+      APP_HOST: "0.0.0.0"
+      APP_PORT: "8080"
+    ports:
+      - "127.0.0.1:8081:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/_mgmt/ping')"]
+      interval: 5s
+      retries: 30
+    mem_limit: 512m
+
+  stac-browser:
+    image: ghcr.io/radiantearth/stac-browser@sha256:9e5731a6f3098e4194c5851c2965732c36d51efd9b1b2d6307037d0e06f866e9
+    platform: linux/amd64  # the image is published for amd64 only
+    environment:
+      SB_catalogUrl: "http://localhost:8081"
+      SB_catalogTitle: "EO Logbook (synthetic)"
+    ports:
+      - "127.0.0.1:8082:8080"
+    mem_limit: 256m

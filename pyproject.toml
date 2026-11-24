@@ -1,0 +1,21 @@
+[project]
+name = "airflow-stac-eo-pipeline"
+version = "0.1.0"
+description = "The argo-stac-eo-pipeline ladder, orchestrated with Apache Airflow instead of Argo Workflows."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+dependencies = [
+    # The unit of work, identical to the Argo repo: pinned to one commit, never copied.
+    "eo-ingest @ https://github.com/lhoupert/argo-stac-eo-pipeline/archive/d764ca9b849eb22a3785d5f91963bf56da846ab1.tar.gz",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
