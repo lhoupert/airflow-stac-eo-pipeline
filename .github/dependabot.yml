@@ -8,7 +8,7 @@ updates:
   # setting "Dependabot security updates". compose.yaml is not tracked yet:
   # its pgstac, stac-fastapi-pgstac and stac-browser images are digests without
   # a tag, which would follow "latest". Add a docker-compose entry with an
-  # ignore for those three once tagged images (e.g. Airflow's own) land there.
+  # ignore for those three once tagged images land there.
   - package-ecosystem: "uv"
     directory: "/"
     # Version updates only: security updates ignore the cooldown.
