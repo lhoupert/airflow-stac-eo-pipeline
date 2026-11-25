@@ -1,0 +1,26 @@
+# Set update schedule for the Python dependencies in uv.lock
+
+version: 2
+updates:
+
+  # eo-ingest is pinned to an argo-stac-eo-pipeline commit, which version
+  # updates can't move; re-pin it by hand. Security PRs come from the repo
+  # setting "Dependabot security updates". compose.yaml is not tracked yet:
+  # its pgstac, stac-fastapi-pgstac and stac-browser images are digests without
+  # a tag, which would follow "latest". Add a docker-compose entry with an
+  # ignore for those three once tagged images land there.
+  - package-ecosystem: "uv"
+    directory: "/"
+    # Version updates only: security updates ignore the cooldown.
+    cooldown:
+      default-days: 7
+    schedule:
+      interval: "weekly"
+    allow:
+    # Include transitive dependencies (e.g. boto3, pillow): the only direct one is the eo-ingest URL pin.
+    - dependency-type: "all"
+    groups:
+      python:
+        patterns:
+        - "*"
+      # No security-updates group: while a grouped security PR is open, Dependabot defers fixes for packages not already in it.
