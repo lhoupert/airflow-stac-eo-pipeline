@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 license = "Apache-2.0"
 dependencies = [
     # The unit of work, identical to the Argo repo: pinned to one commit, never copied.
-    "eo-ingest @ https://github.com/lhoupert/argo-stac-eo-pipeline/archive/d764ca9b849eb22a3785d5f91963bf56da846ab1.tar.gz",
+    "eo-ingest @ https://github.com/lhoupert/argo-stac-eo-pipeline/archive/afd979f0de689cb7a81a91c49e65a37b11a51704.tar.gz",
 ]
 
 [tool.uv]

@@ -29,7 +29,7 @@ check: ## Preflight: Docker running, docker compose v2, uv installed
 
 up: ## Start the data services and create the asset bucket (idempotent)
 	$(COMPOSE) up -d --wait
-	$(LOCAL_ENV) uv run --locked python scripts/bootstrap_bucket.py
+	$(LOCAL_ENV) uv run --locked python -m eo_ingest.bucket
 	@echo "data services up: STAC API http://localhost:8081 · stac-browser http://localhost:8082 · S3 console http://localhost:9101"
 
 down: ## Stop and remove all containers and volumes

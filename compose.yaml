@@ -7,7 +7,7 @@ name: eo-airflow
 services:
   # S3-compatible object store. The Argo repo used MinIO, whose community images are no longer
   # published on Docker Hub (Nov 2026); RustFS is an Apache-2.0 drop-in on the same ports.
-  # The bucket and its public-read policy are created from the host by scripts/bootstrap_bucket.py.
+  # `make up` creates the bucket (public read + CORS) from the host with `eo_ingest.bucket`.
   s3:
     image: rustfs/rustfs:1.0.6@sha256:ee717072290bec9b11abfc0365f8310b00df1cd9b3639943edae47bdef05044a
     environment:
